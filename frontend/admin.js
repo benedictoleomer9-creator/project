@@ -210,12 +210,12 @@ async function assignUID(userId) {
   const uid = inp ? inp.value.trim() : '';
   if (!uid) { showUIDMsg(msg, '⚠️ Enter or scan UID.', 'warn'); return; }
   btn.disabled = true; btn.textContent = '⏳ Saving…';
-  
+
   const res = await apiFetch(`${API}/dashboard/assign_uid`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ user_id: userId, card_uid: uid })
   });
-  
+
   if (res.success) {
     showUIDMsg(msg, `✅ Activated! UID: ${uid}`, 'success');
     setTimeout(() => {
@@ -265,12 +265,12 @@ async function simulateTap() {
   const res = document.getElementById('tapResult');
   if (!uid || !reader) { res.className = 'tap-result show error'; res.textContent = 'Please enter a Card UID and select a reader.'; setScannerState('error-state', 'Missing UID/Reader.'); return; }
   res.className = 'tap-result show'; res.innerHTML = 'Sending tap…';
-  
+
   const d = await apiFetch(`${API}/rfid/tap`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ card_uid: uid, reader_code: reader })
   });
-  
+
   if (d.success) {
     res.className = 'tap-result show success';
     res.innerHTML = `✅ <strong>${d.message}</strong><br><span style="font-size:12px;opacity:.8">${d.data?.subject} · ${d.data?.section} · ${d.data?.tap_time}</span>`;
@@ -280,7 +280,7 @@ async function simulateTap() {
     res.className = 'tap-result show error'; res.textContent = `⚠️ ${d.message}`;
     setScannerState('error-state', `⚠️ ${d.message}`);
   }
-  
+
   setTimeout(() => { document.getElementById('sim_uid').value = ''; setScannerState('ready', 'Ready to Scan — waiting for card…'); rfidFocusLock(); }, 2200);
 }
 
@@ -312,7 +312,7 @@ function setScannerState(state, msg) {
   bar.className = 'rfid-scanner-bar ' + state; txt.textContent = msg;
 }
 
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', function (e) {
   const simPanel = document.getElementById('panel-simulator');
   if (!simPanel || !simPanel.classList.contains('active')) return;
   const inp = document.getElementById('sim_uid');
@@ -320,17 +320,17 @@ document.addEventListener('keydown', function(e) {
   if (focusLockEnabled && inp && document.activeElement !== inp) { if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) inp.focus(); }
 });
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   const inp = document.getElementById('sim_uid');
   if (!inp) return;
-  inp.addEventListener('input', function() {
+  inp.addEventListener('input', function () {
     const val = inp.value.trim();
     if (!val) { setScannerState('ready', 'Ready to Scan — waiting for card…'); inp.classList.remove('scanning-active'); return; }
     inp.classList.add('scanning-active'); setScannerState('scanning', `Reading card… "${val}"`);
     clearTimeout(scanTimer);
     scanTimer = setTimeout(() => { if (val.length >= MIN_UID_LENGTH) finaliseScan(val); }, SCAN_TIMEOUT_MS);
   });
-  document.addEventListener('click', function(ev) {
+  document.addEventListener('click', function (ev) {
     const simPanel = document.getElementById('panel-simulator');
     if (!simPanel || !simPanel.classList.contains('active') || !focusLockEnabled) return;
     const tag = ev.target.tagName;
@@ -354,7 +354,7 @@ async function loadScheduleDropdowns() {
   const secs = await apiFetch(`${API}/schedule/all_sections`);
   const facs = await apiFetch(`${API}/schedule/all_instructors`);
   const rdrs = await apiFetch(`${API}/schedule/all_readers`);
-  
+
   fillSelect('f_subject_id', subs.subjects || [], 'subject_id', s => `${s.subject_code} — ${s.subject_name}`);
   fillSelect('f_section_id', secs.sections || [], 'section_id', s => `${s.section_name} (${s.course || ''})`);
   fillSelect('f_faculty_id', facs.instructors || [], 'user_id', f => f.name);
@@ -450,7 +450,7 @@ async function checkConflicts() {
   }
   const excl = editingScheduleId ? `&exclude_schedule_id=${editingScheduleId}` : '';
   const d = await apiFetch(`${API}/schedule/conflict_check?reader_id=${b.reader_id}&day=${b.day_of_week}&start_time=${b.start_time}&end_time=${b.end_time}${excl}`);
-  
+
   if (d.has_conflict) {
     document.getElementById('conflictWarn').innerHTML = '⚠️ <strong>Conflict detected.</strong> Use Force Override to proceed.';
     document.getElementById('conflictWarn').classList.add('show');
@@ -466,13 +466,13 @@ async function saveSchedule(forceOverride) {
   const b = getSchedFormBody();
   const req = ['subject_id', 'section_id', 'faculty_id', 'reader_id', 'day_of_week', 'start_time', 'end_time'];
   for (const f of req) { if (!b[f]) { document.getElementById('schedSaveMsg').textContent = `⚠️ Field required.`; return; } }
-  
+
   const action = editingScheduleId ? 'update_schedule' : 'create_schedule';
   const d = await apiFetch(`${API}/schedule/${action}`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ...b, force_override: forceOverride })
   });
-  
+
   if (d.success) {
     resetSchedForm();
     await loadScheduleList();
@@ -500,7 +500,7 @@ async function loadInstructors() {
   const d = await apiFetch(`${API}/schedule/list_instructors?search=${encodeURIComponent(q)}`);
   allInstructors = d.instructors || [];
   renderInstructors(allInstructors);
-  
+
   const facD = await apiFetch(`${API}/schedule/all_instructors`);
   const sel = document.getElementById('m_user_id');
   sel.innerHTML = '<option value="">— None / Standalone —</option>' + (facD.instructors || []).map(f => `<option value="${f.user_id}">${f.name} (${f.user_id})</option>`).join('');
@@ -567,20 +567,20 @@ async function saveInstructor() {
   const name = document.getElementById('m_full_name').value.trim();
   const dept = document.getElementById('m_department').value.trim();
   if (!name || !dept) { alert('Full Name and Department are required.'); return; }
-  
+
   const payload = {
     full_name: name, department: dept, specialization: document.getElementById('m_specialization').value.trim() || null,
     email: document.getElementById('m_email').value.trim() || null, contact_no: document.getElementById('m_contact_no').value.trim() || null,
     rfid_uid: document.getElementById('m_rfid_uid').value.trim() || null, user_id: +document.getElementById('m_user_id').value || null,
   };
-  
+
   const action = iid ? 'update_instructor' : 'create_instructor';
   if (iid) payload.instructor_id = +iid;
-  
+
   const d = await apiFetch(`${API}/schedule/${action}`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
   });
-  
+
   if (d.success) { closeInstructorModal(); await loadInstructors(); }
   else alert(`Error: ${d.message}`);
 }
