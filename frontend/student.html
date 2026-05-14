@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Student Portal — CTED RFID</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d0118;--purple:#6c2bd9;--purple-light:#9b59f5;--blue:#2563eb;--cyan:#06b6d4;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--glass:rgba(255,255,255,0.06);--glass-border:rgba(255,255,255,0.1);--text:#fff;--muted:rgba(255,255,255,0.55);--dim:rgba(255,255,255,0.25)}
+html,body{height:100%;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--bg);overflow:hidden}
+.bg-layer{position:fixed;inset:0;z-index:0;background:linear-gradient(135deg,#0d001f,#100222 40%,#0a1628 100%)}
+.bg-layer::before{content:'';position:absolute;top:-200px;left:-200px;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(108,43,217,.25),transparent);filter:blur(60px)}
+.layout{position:relative;z-index:1;display:flex;height:100vh}
+.sidebar{width:240px;flex-shrink:0;background:rgba(255,255,255,0.04);border-right:1px solid var(--glass-border);backdrop-filter:blur(20px);display:flex;flex-direction:column;padding:24px 0}
+.sidebar-logo{padding:0 20px 24px;border-bottom:1px solid var(--glass-border)}
+.sidebar-logo h2{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-top:8px}
+.sidebar-logo p{font-size:11px;color:var(--muted);margin-top:2px}
+.nav{padding:16px 12px;flex:1}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;cursor:pointer;color:var(--muted);font-size:14px;font-weight:500;transition:all .2s;margin-bottom:2px;border:none;background:transparent;width:100%;text-align:left}
+.nav-item:hover{background:rgba(255,255,255,0.06);color:#fff}
+.nav-item.active{background:linear-gradient(135deg,rgba(108,43,217,.35),rgba(37,99,235,.25));color:#fff;border:1px solid rgba(255,255,255,0.1)}
+.nav-icon{font-size:16px;width:20px;text-align:center}
+.notif-badge{min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:800;display:none;align-items:center;justify-content:center;margin-left:auto;line-height:1}
+.notif-badge.show{display:inline-flex}
+.sidebar-footer{padding:16px 12px;border-top:1px solid var(--glass-border)}
+.user-chip{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:var(--glass)}
+.user-avatar{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--blue));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.user-name{font-size:13px;font-weight:600}
+.user-role{font-size:11px;color:var(--muted)}
+.logout-btn{display:block;text-align:center;margin-top:10px;padding:9px;border-radius:10px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.2);color:#fca5a5;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;width:100%}
+.logout-btn:hover{background:rgba(239,68,68,0.2)}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{padding:18px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--glass-border);background:rgba(255,255,255,0.02);flex-shrink:0}
+.topbar h1{font-family:'Syne',sans-serif;font-size:20px;font-weight:700}
+.content{flex:1;overflow-y:auto;padding:24px 28px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent}
+.panel{display:none}.panel.active{display:block;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:18px;padding:20px;position:relative;overflow:hidden;transition:transform .2s}
+.stat-card:hover{transform:translateY(-2px)}
+.stat-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px}
+.stat-value{font-family:'Syne',sans-serif;font-size:34px;font-weight:800}
+.stat-value.purple{color:var(--purple-light)}.stat-value.green{color:var(--green)}.stat-value.amber{color:var(--amber)}.stat-value.red{color:var(--red)}
+.stat-sub{font-size:12px;color:var(--dim);margin-top:4px}
+.stat-icon{position:absolute;right:16px;top:16px;font-size:24px;opacity:.5}
+.section-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:18px;padding:20px;margin-bottom:20px}
+.section-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{padding:10px 12px;text-align:left;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--glass-border);font-weight:600}
+td{padding:12px 12px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.status-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.status-pill.present{background:rgba(34,197,94,.15);color:#86efac}
+.status-pill.late{background:rgba(245,158,11,.15);color:#fde68a}
+.status-pill.absent{background:rgba(239,68,68,.15);color:#fca5a5}
+.badge{padding:4px 10px;border-radius:8px;font-size:11px;font-weight:600}
+.badge.green{background:rgba(34,197,94,.2);color:#86efac;border:1px solid rgba(34,197,94,.3)}
+.badge.purple{background:rgba(108,43,217,.25);color:#c4b5fd;border:1px solid rgba(108,43,217,.3)}
+.progress-bar{height:8px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:8px}
+.progress-fill{height:100%;border-radius:4px;transition:width .5s ease}
+.progress-fill.green{background:linear-gradient(90deg,#15803d,#22c55e)}
+.progress-fill.amber{background:linear-gradient(90deg,#b45309,#f59e0b)}
+.progress-fill.red{background:linear-gradient(90deg,#b91c1c,#ef4444)}
+.subject-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.subject-card{background:rgba(255,255,255,.04);border:1px solid var(--glass-border);border-radius:14px;padding:16px}
+.subject-card h4{font-family:'Syne',sans-serif;font-size:14px;margin-bottom:8px}
+.subject-card .meta{font-size:12px;color:var(--muted)}
+.notif-list{display:flex;flex-direction:column;gap:10px}
+.notif-item{padding:14px 16px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);transition:all .2s}
+.notif-item:hover{background:rgba(255,255,255,.06)}
+.notif-item h4{font-size:13px;font-weight:600;margin-bottom:4px}
+.notif-item p{font-size:12px;color:var(--muted)}
+.notif-item time{font-size:11px;color:var(--dim)}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.profile-field{padding:14px;background:rgba(255,255,255,.04);border:1px solid var(--glass-border);border-radius:12px}
+.profile-field label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--dim);margin-bottom:4px}
+.profile-field .value{font-size:14px;font-weight:500}
+.id-card{background:linear-gradient(135deg,#1a0533,#0a1628);border:2px solid var(--glass-border);border-radius:20px;padding:24px;text-align:center;max-width:340px;margin:0 auto 20px}
+.id-card-logo{width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid var(--purple-light);margin-bottom:12px}
+.id-card h3{font-family:'Syne',sans-serif;font-size:16px}
+.id-card .sid{font-size:13px;color:var(--muted);margin-top:4px;letter-spacing:2px;font-weight:600}
+.id-card .rfid{margin-top:12px;padding:8px 14px;border-radius:8px;font-size:12px;display:inline-block}
+.id-card .rfid.active{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#86efac}
+.id-card .rfid.none{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#fca5a5}
+</style>
+</head>
+<body>
+<div class="bg-layer"></div>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="ogol.jpg" alt="CTED" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--purple-light)" onerror="this.style.display='none'"/>
+      <h2>CTED RFID System</h2><p>STUDENT PORTAL</p>
+    </div>
+    <nav class="nav">
+      <button class="nav-item active" onclick="showPanel('dashboard')"><span class="nav-icon">📊</span>Dashboard</button>
+      <button class="nav-item" onclick="showPanel('attendance')"><span class="nav-icon">📋</span>Attendance</button>
+      <button class="nav-item" onclick="showPanel('subjects')"><span class="nav-icon">📚</span>Subjects</button>
+      <button class="nav-item" onclick="showPanel('notifications')"><span class="nav-icon">🔔</span>Notifications<span class="notif-badge" id="notifBadge">0</span></button>
+      <button class="nav-item" onclick="showPanel('profile')"><span class="nav-icon">👤</span>My Profile</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-chip"><div class="user-avatar" id="userInitial">?</div><div><div class="user-name" id="userName">Student</div><div class="user-role">Student</div></div></div>
+      <button class="logout-btn" onclick="logout()">↩ Logout</button>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar"><h1 id="panelTitle">Dashboard</h1></header>
+    <div class="content">
+      <!-- DASHBOARD -->
+      <div class="panel active" id="panel-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-label">Attendance Rate</div><div class="stat-value green" id="s-rate">—%</div><div class="stat-sub">Overall rate</div></div>
+          <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-label">Present</div><div class="stat-value green" id="s-present">—</div><div class="stat-sub">Total sessions</div></div>
+          <div class="stat-card"><div class="stat-icon">⏰</div><div class="stat-label">Late</div><div class="stat-value amber" id="s-late">—</div><div class="stat-sub">After grace period</div></div>
+          <div class="stat-card"><div class="stat-icon">❌</div><div class="stat-label">Absent</div><div class="stat-value red" id="s-absent">—</div><div class="stat-sub">Missed sessions</div></div>
+        </div>
+        <div class="section-card"><div class="section-title">Recent Attendance</div>
+        <table><thead><tr><th>Subject</th><th>Date</th><th>Time</th><th>Status</th></tr></thead><tbody id="recentAtt"><tr><td colspan="4" style="text-align:center;color:var(--dim);padding:20px">Loading…</td></tr></tbody></table></div>
+      </div>
+      <!-- ATTENDANCE -->
+      <div class="panel" id="panel-attendance">
+        <div class="section-card"><div class="section-title">Full Attendance History</div>
+        <table><thead><tr><th>Subject</th><th>Section</th><th>Date</th><th>Tap Time</th><th>Status</th></tr></thead><tbody id="fullAtt"><tr><td colspan="5" style="text-align:center;color:var(--dim);padding:20px">Loading…</td></tr></tbody></table></div>
+      </div>
+      <!-- SUBJECTS -->
+      <div class="panel" id="panel-subjects">
+        <div class="subject-grid" id="subjectGrid"><p style="color:var(--dim)">Loading…</p></div>
+      </div>
+      <!-- NOTIFICATIONS -->
+      <div class="panel" id="panel-notifications">
+        <div class="notif-list" id="notifList"><p style="color:var(--dim)">Loading…</p></div>
+      </div>
+      <!-- PROFILE -->
+      <div class="panel" id="panel-profile">
+        <div class="id-card" id="idCard"><p style="color:var(--dim)">Loading profile…</p></div>
+        <div class="section-card"><div class="section-title">Profile Details</div><div class="profile-grid" id="profileGrid"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const API='/api/student';
+const panels=['dashboard','attendance','subjects','notifications','profile'];
+const titles={dashboard:'Dashboard',attendance:'Attendance History',subjects:'Subjects',notifications:'Notifications',profile:'My Profile'};
+let currentUser=null;
+
+function escH(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+
+fetch('/api/me',{credentials:'include'}).then(r=>r.json()).then(d=>{
+  if(!d.loggedIn||d.user.role==='admin'){location.href='index.html';return;}
+  currentUser=d.user;
+  document.getElementById('userName').textContent=d.user.name;
+  document.getElementById('userInitial').textContent=(d.user.name||'?')[0].toUpperCase();
+  loadDashboard();loadUnreadCount();
+});
+
+function showPanel(name){
+  panels.forEach(p=>{document.getElementById('panel-'+p).classList.toggle('active',p===name);});
+  document.querySelectorAll('.nav-item').forEach((b,i)=>b.classList.toggle('active',panels[i]===name));
+  document.getElementById('panelTitle').textContent=titles[name];
+  if(name==='dashboard')loadDashboard();
+  if(name==='attendance')loadFullAttendance();
+  if(name==='subjects')loadSubjects();
+  if(name==='notifications')loadNotifications();
+  if(name==='profile')loadProfile();
+}
+
+async function apiFetch(url){try{const r=await fetch(url,{credentials:'include'});return await r.json();}catch(e){console.error(e);return{};}}
+
+async function loadDashboard(){
+  const s=await apiFetch(`${API}/stats`);
+  if(s.stats){
+    document.getElementById('s-rate').textContent=(s.stats.attendance_rate||0)+'%';
+    document.getElementById('s-present').textContent=s.stats.present_count||0;
+    document.getElementById('s-late').textContent=s.stats.late_count||0;
+    document.getElementById('s-absent').textContent=s.stats.absent_count||0;
+  }
+  const a=await apiFetch(`${API}/attendance?limit=10`);
+  const tb=document.getElementById('recentAtt');
+  if(a.attendance?.length){
+    tb.innerHTML=a.attendance.map(r=>`<tr><td>${escH(r.subject_code)}</td><td>${r.session_date}</td>
+      <td>${new Date(r.tap_time).toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'})}</td>
+      <td><span class="status-pill ${r.status}">${r.status}</span></td></tr>`).join('');
+  }else{tb.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--dim);padding:20px">No records yet.</td></tr>';}
+}
+
+async function loadFullAttendance(){
+  const a=await apiFetch(`${API}/attendance?limit=100`);
+  const tb=document.getElementById('fullAtt');
+  if(a.attendance?.length){
+    tb.innerHTML=a.attendance.map(r=>`<tr><td>${escH(r.subject_code)}: ${escH(r.subject_name)}</td><td>${escH(r.section_name)}</td>
+      <td>${r.session_date}</td><td>${new Date(r.tap_time).toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'})}</td>
+      <td><span class="status-pill ${r.status}">${r.status}</span></td></tr>`).join('');
+  }else{tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--dim);padding:20px">No records yet.</td></tr>';}
+}
+
+async function loadSubjects(){
+  const s=await apiFetch(`${API}/stats`);
+  const grid=document.getElementById('subjectGrid');
+  if(s.by_subject?.length){
+    grid.innerHTML=s.by_subject.map(sub=>{
+      const total=parseInt(sub.total)||1;const rate=Math.round(((parseInt(sub.present)+parseInt(sub.late))/total)*100);
+      const cls=rate>=80?'green':rate>=60?'amber':'red';
+      return `<div class="subject-card"><h4>${escH(sub.subject_code)}: ${escH(sub.subject_name)}</h4>
+        <div class="meta">Present: ${sub.present} · Late: ${sub.late} · Absent: ${sub.absent} · Rate: ${rate}%</div>
+        <div class="progress-bar"><div class="progress-fill ${cls}" style="width:${rate}%"></div></div></div>`;
+    }).join('');
+  }else{grid.innerHTML='<p style="color:var(--dim)">No subject data yet.</p>';}
+}
+
+async function loadNotifications(){
+  const n=await apiFetch(`${API}/notifications`);
+  const list=document.getElementById('notifList');
+  if(n.notifications?.length){
+    list.innerHTML=n.notifications.map(nt=>`<div class="notif-item"><h4>${escH(nt.title)}</h4><p>${escH(nt.message)}</p>
+      <time>${new Date(nt.created_at).toLocaleString('en-PH')}</time></div>`).join('');
+  }else{list.innerHTML='<p style="color:var(--dim);text-align:center;padding:40px">No notifications.</p>';}
+  document.getElementById('notifBadge').classList.remove('show');
+}
+
+async function loadProfile(){
+  const p=await apiFetch(`${API}/profile`);
+  if(!p.profile)return;const u=p.profile;
+  const rfidHtml=u.card_uid?`<div class="rfid active">📡 ${escH(u.card_uid)}</div>`:`<div class="rfid none">No RFID card assigned</div>`;
+  document.getElementById('idCard').innerHTML=`<img src="ogol.jpg" alt="CTED" class="id-card-logo" onerror="this.style.display='none'"/>
+    <h3>${escH(u.first_name)} ${escH(u.last_name)}</h3><div class="sid">${escH(u.student_id)}</div>${rfidHtml}`;
+  const fields=[['First Name',u.first_name],['Last Name',u.last_name],['Student ID',u.student_id],['Email',u.email||'—'],
+    ['Gender',u.gender||'—'],['Date of Birth',u.date_of_birth||'—'],['Contact',u.contact_no||'—'],['Guardian',u.guardian_name||'—']];
+  document.getElementById('profileGrid').innerHTML=fields.map(([l,v])=>`<div class="profile-field"><label>${l}</label><div class="value">${escH(v)}</div></div>`).join('');
+}
+
+async function loadUnreadCount(){
+  const d=await apiFetch(`${API}/unread_count`);
+  if(d.unread>0){document.getElementById('notifBadge').textContent=d.unread;document.getElementById('notifBadge').classList.add('show');}
+}
+
+function logout(){fetch('/api/auth/logout',{method:'POST',credentials:'include'}).then(()=>location.href='index.html');}
+</script>
+</body>
+</html>
