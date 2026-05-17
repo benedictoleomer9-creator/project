@@ -1,135 +1,472 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Admin Dashboard — CTED RFID</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="admin.css"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Admin Dashboard — CTED RFID</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="admin.css" />
 </head>
+
 <body>
-<div class="bg-layer"></div>
-<div class="layout">
-  <aside class="sidebar">
-    <div class="sidebar-logo">
-      <div class="sidebar-logo-container"><img src="ogol.jpg" alt="CTED Logo" class="sidebar-logo-img" onerror="this.style.display='none'"/></div>
-      <h2>CTED RFID System</h2><p>SYSTEM ADMIN</p>
-    </div>
-    <nav class="nav">
-      <button class="nav-item active" onclick="showPanel('overview')"><span class="nav-icon">📊</span>Overview</button>
-      <button class="nav-item" onclick="showPanel('logs')"><span class="nav-icon">📋</span>Attendance Logs</button>
-      <button class="nav-item" onclick="showPanel('students')"><span class="nav-icon">👥</span>Students</button>
-      <button class="nav-item" onclick="showPanel('simulator')"><span class="nav-icon">📡</span>RFID Simulator</button>
-      <button class="nav-item" onclick="showPanel('schedules')"><span class="nav-icon">🗓️</span>Schedule Manager</button>
-      <button class="nav-item" onclick="showPanel('instructors')"><span class="nav-icon">👨‍🏫</span>Instructors</button>
-      <button class="nav-item" onclick="showPanel('live')"><span class="nav-icon">⚡</span>Live Sessions</button>
-      <button class="nav-item" onclick="showPanel('audit')"><span class="nav-icon">🔍</span>Audit Logs</button>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="user-chip"><div class="user-avatar" id="adminInitial">A</div><div><div class="user-name" id="adminName">Admin</div><div class="user-role">Administrator</div></div></div>
-      <button class="logout-btn" onclick="logout()">↩ Logout</button>
-    </div>
-  </aside>
-  <div class="main">
-    <header class="topbar"><h1 id="panelTitle">Overview</h1><div class="topbar-right"><div class="date-badge" id="liveClock"></div></div></header>
-    <div class="content">
-      <!-- OVERVIEW -->
-      <div class="panel active" id="panel-overview">
-        <div class="stats-grid">
-          <div class="stat-card total"><div class="stat-icon">🎓</div><div class="stat-label">Total Students</div><div class="stat-value total" id="stat-total">—</div><div class="stat-sub">Enrolled &amp; active</div></div>
-          <div class="stat-card present"><div class="stat-icon">✅</div><div class="stat-label">Present Today</div><div class="stat-value present" id="stat-present">—</div><div class="stat-sub">Recorded this session</div></div>
-          <div class="stat-card late"><div class="stat-icon">⏰</div><div class="stat-label">Late Today</div><div class="stat-value late" id="stat-late">—</div><div class="stat-sub">After grace period</div></div>
-          <div class="stat-card sessions"><div class="stat-icon">📚</div><div class="stat-label">Sessions Today</div><div class="stat-value sessions" id="stat-sessions">—</div><div class="stat-sub">Active class sessions</div></div>
+  <div class="bg-layer"></div>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-container"><img src="ogol.jpg" alt="CTED Logo" class="sidebar-logo-img"
+            onerror="this.style.display='none'" /></div>
+        <h2>CTED RFID System</h2>
+        <p>SYSTEM ADMIN</p>
+      </div>
+      <nav class="nav">
+        <button class="nav-item active" onclick="showPanel('overview')"><span
+            class="nav-icon">📊</span>Overview</button>
+        <button class="nav-item" onclick="showPanel('logs')"><span class="nav-icon">📋</span>Attendance Logs</button>
+        <button class="nav-item" onclick="showPanel('students')"><span class="nav-icon">👥</span>Students</button>
+        <button class="nav-item" onclick="showPanel('simulator')"><span class="nav-icon">📡</span>RFID
+          Simulator</button>
+        <button class="nav-item" onclick="showPanel('schedules')"><span class="nav-icon">🗓️</span>Schedule
+          Manager</button>
+        <button class="nav-item" onclick="showPanel('instructors')"><span
+            class="nav-icon">👨‍🏫</span>Instructors</button>
+        <button class="nav-item" onclick="showPanel('live')"><span class="nav-icon">⚡</span>Live Sessions</button>
+        <button class="nav-item" onclick="showPanel('audit')"><span class="nav-icon">🔍</span>Audit Logs</button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-chip">
+          <div class="user-avatar" id="adminInitial">A</div>
+          <div>
+            <div class="user-name" id="adminName">Admin</div>
+            <div class="user-role">Administrator</div>
+          </div>
         </div>
-        <div class="grid-2">
-          <div class="section-card"><div class="section-header"><span class="section-title">Weekly Attendance</span><span class="badge purple">Last 7 days</span></div><div class="bar-chart" id="weeklyChart"></div></div>
-          <div class="section-card"><div class="section-header"><span class="section-title">Today's Recent Taps</span><span class="badge green" id="todayCount">0</span></div>
-          <div class="table-wrap"><table><thead><tr><th>Student</th><th>Subject</th><th>Time</th><th>Status</th></tr></thead><tbody id="recentLogs"><tr><td colspan="4" style="text-align:center;color:var(--dim);padding:20px">Loading…</td></tr></tbody></table></div></div>
+        <button class="logout-btn" onclick="logout()">↩ Logout</button>
+      </div>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <h1 id="panelTitle">Overview</h1>
+        <div class="topbar-right">
+          <div class="date-badge" id="liveClock"></div>
         </div>
-      </div>
-      <!-- LOGS -->
-      <div class="panel" id="panel-logs">
-        <div class="date-picker"><label style="font-size:13px;color:var(--muted)">Date:</label><input type="date" id="logsDate" onchange="loadLogs()"/><button class="btn-sm primary" onclick="loadLogs()">Refresh</button></div>
-        <div class="section-card"><div class="section-header"><span class="section-title">Attendance Records</span><span class="badge blue" id="logTotal">0 records</span></div>
-        <div class="table-wrap"><table><thead><tr><th>Student ID</th><th>Name</th><th>Subject</th><th>Section</th><th>Tap Time</th><th>Status</th><th>Recorded By</th></tr></thead><tbody id="logsBody"><tr><td colspan="7" style="text-align:center;color:var(--dim);padding:20px">Select a date.</td></tr></tbody></table></div></div>
-      </div>
-      <!-- STUDENTS -->
-      <div class="panel" id="panel-students">
-        <div class="pending-notice" id="pendingNotice" style="display:none"><span style="font-size:18px">⏳</span><span>There are <strong id="pendingNoticeCt">0</strong> student(s) awaiting activation.</span></div>
-        <div class="tab-bar"><button class="tab-btn active" id="tab-active-btn" onclick="switchStudentTab('active')">✅ Active</button><button class="tab-btn" id="tab-pending-btn" onclick="switchStudentTab('pending')">⏳ Pending <span class="pending-count-badge" id="pendingTabBadge" style="display:none">0</span></button></div>
-        <div id="view-active"><div class="search-bar"><input class="search-input" placeholder="Search by name or ID…" id="studentSearch" oninput="searchStudents()"/><button class="btn-sm ghost" onclick="loadStudents()">Refresh</button></div>
-        <div class="section-card"><div class="section-header"><span class="section-title">Registered Students</span></div>
-        <div class="table-wrap"><table><thead><tr><th>Student ID</th><th>Name</th><th>Email</th><th>Contact</th><th>RFID Card</th><th>Status</th></tr></thead><tbody id="studentsBody"><tr><td colspan="6" style="text-align:center;color:var(--dim);padding:20px">Loading…</td></tr></tbody></table></div></div></div>
-        <div id="view-pending" style="display:none"><div class="search-bar"><input class="search-input" placeholder="Search pending…" id="pendingSearch" oninput="searchPending()"/><button class="btn-sm ghost" onclick="loadPendingStudents()">Refresh</button></div>
-        <div class="section-card"><div class="section-header"><span class="section-title">Pending — Assign RFID to Activate</span><span class="badge pending" id="pendingBadge">0 pending</span></div>
-        <div class="table-wrap"><table><thead><tr><th>Student ID</th><th>Name</th><th>Email</th><th>Contact</th><th>Registered</th><th>Assign RFID UID</th></tr></thead><tbody id="pendingBody"><tr><td colspan="6" style="text-align:center;color:var(--dim);padding:20px">Loading…</td></tr></tbody></table></div></div></div>
-      </div>
-      <!-- SIMULATOR -->
-      <div class="panel" id="panel-simulator">
-        <div class="simulator"><div class="section-header"><span class="section-title">📡 RFID Tap Simulator</span><span class="badge purple">Test Mode</span></div>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Simulate a physical RFID card tap.</p>
-        <div class="rfid-scanner-bar ready" id="scannerBar"><div class="scanner-dot"></div><div class="scanner-text"><div class="scanner-label">USB RFID Reader</div><div class="scanner-status" id="scannerStatus">Ready — waiting for card…</div></div></div>
-        <div class="sim-form"><div class="sim-field"><label>Card UID</label><input type="text" id="sim_uid" placeholder="Scan or type UID…" autocomplete="off"/></div>
-        <div class="sim-field"><label>Reader</label><select id="sim_reader"><option value="">Loading…</option></select></div>
-        <button class="btn-tap" onclick="simulateTap()">⚡ Simulate Tap</button></div>
-        <div class="tap-result" id="tapResult"></div></div>
-        <div class="section-card"><div class="section-header"><span class="section-title">Live Tap Feed</span><span class="badge green" id="feedCount">0</span></div>
-        <div class="table-wrap"><table><thead><tr><th>Time</th><th>Student</th><th>Card UID</th><th>Reader</th><th>Status</th><th>Subject</th></tr></thead><tbody id="feedBody"><tr><td colspan="6" style="text-align:center;color:var(--dim);padding:20px">Waiting for taps…</td></tr></tbody></table></div></div>
-      </div>
-      <!-- SCHEDULES -->
-      <div class="panel" id="panel-schedules">
-        <div class="section-card" id="schedFormCard"><div class="section-header"><span class="section-title" id="schedFormTitle">➕ Create New Schedule</span><div style="display:flex;gap:8px"><button class="btn-sm ghost" onclick="resetSchedForm()">Clear Form</button></div></div>
-        <input type="hidden" id="edit_schedule_id"/>
-        <div class="form-grid">
-          <div class="form-field"><label>Subject</label><select id="f_subject_id"><option value="">Loading…</option></select></div>
-          <div class="form-field"><label>Section</label><select id="f_section_id"><option value="">Loading…</option></select></div>
-          <div class="form-field"><label>Instructor</label><select id="f_faculty_id"><option value="">Loading…</option></select></div>
-          <div class="form-field"><label>Reader / Room</label><select id="f_reader_id"><option value="">Loading…</option></select></div>
-          <div class="form-field"><label>Day</label><select id="f_day_of_week"><option value="">Select…</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option></select></div>
-          <div class="form-field"><label>Start Time</label><input type="time" id="f_start_time"/></div>
-          <div class="form-field"><label>End Time</label><input type="time" id="f_end_time"/></div>
-          <div class="form-field"><label>Late Threshold (min)</label><input type="number" id="f_late_minutes" value="15" min="0" max="60"/></div>
+      </header>
+      <div class="content">
+        <!-- OVERVIEW -->
+        <div class="panel active" id="panel-overview">
+          <div class="stats-grid">
+            <div class="stat-card total">
+              <div class="stat-icon">🎓</div>
+              <div class="stat-label">Total Students</div>
+              <div class="stat-value total" id="stat-total">—</div>
+              <div class="stat-sub">Enrolled &amp; active</div>
+            </div>
+            <div class="stat-card present">
+              <div class="stat-icon">✅</div>
+              <div class="stat-label">Present Today</div>
+              <div class="stat-value present" id="stat-present">—</div>
+              <div class="stat-sub">Recorded this session</div>
+            </div>
+            <div class="stat-card late">
+              <div class="stat-icon">⏰</div>
+              <div class="stat-label">Late Today</div>
+              <div class="stat-value late" id="stat-late">—</div>
+              <div class="stat-sub">After grace period</div>
+            </div>
+            <div class="stat-card sessions">
+              <div class="stat-icon">📚</div>
+              <div class="stat-label">Sessions Today</div>
+              <div class="stat-value sessions" id="stat-sessions">—</div>
+              <div class="stat-sub">Active class sessions</div>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="section-card">
+              <div class="section-header"><span class="section-title">Weekly Attendance</span><span
+                  class="badge purple">Last 7 days</span></div>
+              <div class="bar-chart" id="weeklyChart"></div>
+            </div>
+            <div class="section-card">
+              <div class="section-header"><span class="section-title">Today's Recent Taps</span><span
+                  class="badge green" id="todayCount">0</span></div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Student</th>
+                      <th>Subject</th>
+                      <th>Time</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recentLogs">
+                    <tr>
+                      <td colspan="4" style="text-align:center;color:var(--dim);padding:20px">Loading…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="form-actions"><button class="btn-sm primary" onclick="saveSchedule(false)">💾 Save</button><button class="btn-sm danger" id="schedOverrideBtn" onclick="saveSchedule(true)" style="display:none">🔴 Force Override</button><button class="btn-sm ghost" onclick="checkConflicts()">🔍 Check Conflicts</button><span id="schedSaveMsg" style="font-size:12px;color:var(--muted)"></span></div>
-        <div class="conflict-warning" id="conflictWarn"></div><div class="success-msg" id="schedSuccessMsg"></div></div>
-        <div class="section-card"><div class="section-header"><span class="section-title">All Schedules</span><button class="btn-sm ghost" onclick="loadScheduleList()">Refresh</button></div>
-        <div class="search-bar"><input class="search-input" id="schedSearch" placeholder="Search…" oninput="filterSchedules()"/></div>
-        <div class="table-wrap"><table><thead><tr><th>Subject</th><th>Section</th><th>Instructor</th><th>Day</th><th>Time</th><th>Reader</th><th>Enrolled</th><th>Status</th><th>Actions</th></tr></thead><tbody id="schedListBody"><tr><td colspan="9" style="text-align:center;color:var(--dim);padding:20px">Loading…</td></tr></tbody></table></div></div>
-      </div>
-      <!-- INSTRUCTORS -->
-      <div class="panel" id="panel-instructors">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px"><div><p style="font-size:13px;color:var(--muted)">Manage instructor profiles and RFID assignments.</p></div>
-        <div style="display:flex;gap:10px"><button class="btn-sm ghost" onclick="loadInstructors()">↺ Refresh</button><button class="btn-sm primary" onclick="openInstructorModal()">➕ Add Instructor</button></div></div>
-        <div class="search-bar"><input class="search-input" id="instructorSearch" placeholder="Search…" oninput="filterInstructors()"/></div>
-        <div class="instructor-grid" id="instructorGrid"><div style="grid-column:1/-1;text-align:center;color:var(--dim);padding:40px">Loading…</div></div>
-      </div>
-      <!-- LIVE SESSIONS -->
-      <div class="panel" id="panel-live">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px"><div><p style="font-size:13px;color:var(--muted)">Select a session to view attendees. Auto-refreshes every 5s.</p></div>
-        <div style="display:flex;gap:10px"><span class="poll-badge polling" id="pollBadge">● Auto-refresh ON</span><button class="btn-sm ghost" onclick="loadLiveSessions()">↺ Refresh Now</button></div></div>
-        <div class="sessions-grid" id="sessionsGrid"><div class="empty-sessions"><span class="icon">📭</span>Loading…</div></div>
-        <div id="bootPanelWrap" style="display:none"><div class="boot-panel"><div class="close-session-bar"><div><div style="font-family:'Syne';font-size:14px;font-weight:700" id="bootPanelTitle">Session Students</div><div style="font-size:12px;color:var(--muted);margin-top:2px" id="bootPanelMeta"></div></div>
-        <div style="display:flex;gap:10px"><button class="btn-sm danger" id="closeSessionBtn" onclick="closeSession()">🔴 Close Session</button><button class="btn-sm ghost" onclick="loadBootStudents()">↺ Refresh</button></div></div>
-        <div id="bootStudentList"><p style="text-align:center;color:var(--dim);padding:20px">Select a session.</p></div></div></div>
-      </div>
-      <!-- AUDIT -->
-      <div class="panel" id="panel-audit">
-        <div class="section-card"><div class="section-header"><span class="section-title">System Audit Log</span><button class="btn-sm ghost" onclick="loadAudit()">Refresh</button></div>
-        <div class="table-wrap"><table><thead><tr><th>Time</th><th>User</th><th>Action</th><th>Table</th><th>IP</th></tr></thead><tbody id="auditBody"><tr><td colspan="5" style="text-align:center;color:var(--dim);padding:20px">Loading…</td></tr></tbody></table></div></div>
+        <!-- LOGS -->
+        <div class="panel" id="panel-logs">
+          <div class="date-picker"><label style="font-size:13px;color:var(--muted)">Date:</label><input type="date"
+              id="logsDate" onchange="loadLogs()" /><button class="btn-sm primary" onclick="loadLogs()">Refresh</button>
+          </div>
+          <div class="section-card">
+            <div class="section-header"><span class="section-title">Attendance Records</span><span class="badge blue"
+                id="logTotal">0 records</span></div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Student ID</th>
+                    <th>Name</th>
+                    <th>Subject</th>
+                    <th>Section</th>
+                    <th>Tap Time</th>
+                    <th>Status</th>
+                    <th>Recorded By</th>
+                  </tr>
+                </thead>
+                <tbody id="logsBody">
+                  <tr>
+                    <td colspan="7" style="text-align:center;color:var(--dim);padding:20px">Select a date.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <!-- STUDENTS -->
+        <div class="panel" id="panel-students">
+          <div class="pending-notice" id="pendingNotice" style="display:none"><span
+              style="font-size:18px">⏳</span><span>There are <strong id="pendingNoticeCt">0</strong> student(s) awaiting
+              activation.</span></div>
+          <div class="tab-bar"><button class="tab-btn active" id="tab-active-btn" onclick="switchStudentTab('active')">✅
+              Active</button><button class="tab-btn" id="tab-pending-btn" onclick="switchStudentTab('pending')">⏳
+              Pending <span class="pending-count-badge" id="pendingTabBadge" style="display:none">0</span></button>
+          </div>
+          <div id="view-active">
+            <div class="search-bar"><input class="search-input" placeholder="Search by name or ID…" id="studentSearch"
+                oninput="searchStudents()" /><button class="btn-sm ghost" onclick="loadStudents()">Refresh</button>
+            </div>
+            <div class="section-card">
+              <div class="section-header"><span class="section-title">Registered Students</span></div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Student ID</th>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Contact</th>
+                      <th>RFID Card</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="studentsBody">
+                    <tr>
+                      <td colspan="6" style="text-align:center;color:var(--dim);padding:20px">Loading…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div id="view-pending" style="display:none">
+            <div class="search-bar"><input class="search-input" placeholder="Search pending…" id="pendingSearch"
+                oninput="searchPending()" /><button class="btn-sm ghost"
+                onclick="loadPendingStudents()">Refresh</button></div>
+            <div class="section-card">
+              <div class="section-header"><span class="section-title">Pending — Assign RFID to Activate</span><span
+                  class="badge pending" id="pendingBadge">0 pending</span></div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Student ID</th>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Contact</th>
+                      <th>Registered</th>
+                      <th>Assign RFID UID</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pendingBody">
+                    <tr>
+                      <td colspan="6" style="text-align:center;color:var(--dim);padding:20px">Loading…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- SIMULATOR -->
+        <div class="panel" id="panel-simulator">
+          <div class="simulator">
+            <div class="section-header"><span class="section-title">📡 RFID Tap Simulator</span><span
+                class="badge purple">Test Mode</span></div>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Simulate a physical RFID card tap.</p>
+            <div class="rfid-scanner-bar ready" id="scannerBar">
+              <div class="scanner-dot"></div>
+              <div class="scanner-text">
+                <div class="scanner-label">USB RFID Reader</div>
+                <div class="scanner-status" id="scannerStatus">Ready — waiting for card…</div>
+              </div>
+            </div>
+            <div class="sim-form">
+              <div class="sim-field"><label>Card UID</label><input type="text" id="sim_uid"
+                  placeholder="Scan or type UID…" autocomplete="off" /></div>
+              <div class="sim-field"><label>Reader</label><select id="sim_reader">
+                  <option value="">Loading…</option>
+                </select></div>
+              <button class="btn-tap" onclick="simulateTap()">⚡ Simulate Tap</button>
+            </div>
+            <div class="tap-result" id="tapResult"></div>
+          </div>
+          <div class="section-card">
+            <div class="section-header"><span class="section-title">Live Tap Feed</span><span class="badge green"
+                id="feedCount">0</span></div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Student</th>
+                    <th>Card UID</th>
+                    <th>Reader</th>
+                    <th>Status</th>
+                    <th>Subject</th>
+                  </tr>
+                </thead>
+                <tbody id="feedBody">
+                  <tr>
+                    <td colspan="6" style="text-align:center;color:var(--dim);padding:20px">Waiting for taps…</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <!-- SCHEDULES -->
+        <div class="panel" id="panel-schedules">
+          <div class="section-card" id="schedFormCard">
+            <div class="section-header"><span class="section-title" id="schedFormTitle">➕ Create New Schedule</span>
+              <div style="display:flex;gap:8px"><button class="btn-sm ghost" onclick="resetSchedForm()">Clear
+                  Form</button></div>
+            </div>
+            <input type="hidden" id="edit_schedule_id" />
+            <div class="form-grid">
+              <div class="form-field"><label>Subject</label><select id="f_subject_id">
+                  <option value="">Loading…</option>
+                </select></div>
+              <div class="form-field"><label>Section</label><select id="f_section_id">
+                  <option value="">Loading…</option>
+                </select></div>
+              <div class="form-field"><label>Instructor</label><select id="f_faculty_id">
+                  <option value="">Loading…</option>
+                </select></div>
+              <div class="form-field"><label>Reader / Room</label><select id="f_reader_id">
+                  <option value="">Loading…</option>
+                </select></div>
+              <div class="form-field"><label>Day</label><select id="f_day_of_week">
+                  <option value="">Select…</option>
+                  <option>Monday</option>
+                  <option>Tuesday</option>
+                  <option>Wednesday</option>
+                  <option>Thursday</option>
+                  <option>Friday</option>
+                  <option>Saturday</option>
+                  <option>Sunday</option>
+                </select></div>
+              <div class="form-field"><label>Start Time</label><input type="time" id="f_start_time" /></div>
+              <div class="form-field"><label>End Time</label><input type="time" id="f_end_time" /></div>
+              <div class="form-field"><label>Late Threshold (min)</label><input type="number" id="f_late_minutes"
+                  value="15" min="0" max="60" /></div>
+            </div>
+            <div class="form-actions"><button class="btn-sm primary" onclick="saveSchedule(false)">💾
+                Save</button><button class="btn-sm danger" id="schedOverrideBtn" onclick="saveSchedule(true)"
+                style="display:none">🔴 Force Override</button><button class="btn-sm ghost"
+                onclick="checkConflicts()">🔍 Check Conflicts</button><span id="schedSaveMsg"
+                style="font-size:12px;color:var(--muted)"></span></div>
+            <div class="conflict-warning" id="conflictWarn"></div>
+            <div class="success-msg" id="schedSuccessMsg"></div>
+          </div>
+          <div class="section-card">
+            <div class="section-header"><span class="section-title">All Schedules</span><button class="btn-sm ghost"
+                onclick="loadScheduleList()">Refresh</button></div>
+            <div class="search-bar"><input class="search-input" id="schedSearch" placeholder="Search…"
+                oninput="filterSchedules()" /></div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Subject</th>
+                    <th>Section</th>
+                    <th>Instructor</th>
+                    <th>Day</th>
+                    <th>Time</th>
+                    <th>Reader</th>
+                    <th>Enrolled</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="schedListBody">
+                  <tr>
+                    <td colspan="9" style="text-align:center;color:var(--dim);padding:20px">Loading…</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <!-- INSTRUCTORS -->
+        <div class="panel" id="panel-instructors">
+          <div class="pending-notice" id="instPendingNotice" style="display:none"><span
+              style="font-size:18px">⏳</span><span>There are <strong id="instPendingNoticeCt">0</strong> instructor(s)
+              awaiting activation.</span></div>
+          <div class="tab-bar"><button class="tab-btn active" id="inst-tab-active-btn"
+              onclick="switchInstTab('active')">✅ Active</button><button class="tab-btn" id="inst-tab-pending-btn"
+              onclick="switchInstTab('pending')">⏳ Pending <span class="pending-count-badge" id="instPendingTabBadge"
+                style="display:none">0</span></button></div>
+
+          <div id="inst-view-active">
+            <div
+              style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+              <div>
+                <p style="font-size:13px;color:var(--muted)">Manage instructor profiles and RFID assignments.</p>
+              </div>
+              <div style="display:flex;gap:10px"><button class="btn-sm ghost" onclick="loadInstructors()">↺
+                  Refresh</button><button class="btn-sm primary" onclick="openInstructorModal()">➕ Add
+                  Instructor</button></div>
+            </div>
+            <div class="search-bar"><input class="search-input" id="instructorSearch"
+                placeholder="Search active instructors…" oninput="filterInstructors()" /></div>
+            <div class="instructor-grid" id="instructorGrid">
+              <div style="grid-column:1/-1;text-align:center;color:var(--dim);padding:40px">Loading…</div>
+            </div>
+          </div>
+
+          <div id="inst-view-pending" style="display:none">
+            <div class="search-bar"><input class="search-input" placeholder="Search pending instructors…"
+                id="instPendingSearch" oninput="searchInstPending()" /><button class="btn-sm ghost"
+                onclick="loadPendingInstructors()">Refresh</button></div>
+            <div class="section-card">
+              <div class="section-header"><span class="section-title">Pending — Approve to Activate</span><span
+                  class="badge pending" id="instPendingBadge">0 pending</span></div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Instructor ID</th>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Contact</th>
+                      <th>Registered</th>
+                      <th>Approve & Assign RFID</th>
+                    </tr>
+                  </thead>
+                  <tbody id="instPendingBody">
+                    <tr>
+                      <td colspan="6" style="text-align:center;color:var(--dim);padding:20px">Loading…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- LIVE SESSIONS -->
+        <div class="panel" id="panel-live">
+          <div
+            style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+            <div>
+              <p style="font-size:13px;color:var(--muted)">Select a session to view attendees. Auto-refreshes every 5s.
+              </p>
+            </div>
+            <div style="display:flex;gap:10px"><span class="poll-badge polling" id="pollBadge">● Auto-refresh
+                ON</span><button class="btn-sm ghost" onclick="loadLiveSessions()">↺ Refresh Now</button></div>
+          </div>
+          <div class="sessions-grid" id="sessionsGrid">
+            <div class="empty-sessions"><span class="icon">📭</span>Loading…</div>
+          </div>
+          <div id="bootPanelWrap" style="display:none">
+            <div class="boot-panel">
+              <div class="close-session-bar">
+                <div>
+                  <div style="font-family:'Syne';font-size:14px;font-weight:700" id="bootPanelTitle">Session Students
+                  </div>
+                  <div style="font-size:12px;color:var(--muted);margin-top:2px" id="bootPanelMeta"></div>
+                </div>
+                <div style="display:flex;gap:10px"><button class="btn-sm danger" id="closeSessionBtn"
+                    onclick="closeSession()">🔴 Close Session</button><button class="btn-sm ghost"
+                    onclick="loadBootStudents()">↺ Refresh</button></div>
+              </div>
+              <div id="bootStudentList">
+                <p style="text-align:center;color:var(--dim);padding:20px">Select a session.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- AUDIT -->
+        <div class="panel" id="panel-audit">
+          <div class="section-card">
+            <div class="section-header"><span class="section-title">System Audit Log</span><button class="btn-sm ghost"
+                onclick="loadAudit()">Refresh</button></div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Table</th>
+                    <th>IP</th>
+                  </tr>
+                </thead>
+                <tbody id="auditBody">
+                  <tr>
+                    <td colspan="5" style="text-align:center;color:var(--dim);padding:20px">Loading…</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-</div>
-<!-- Instructor Modal -->
-<div class="modal-overlay" id="instructorModal"><div class="modal-box"><button class="modal-close" onclick="closeInstructorModal()">✕</button><div class="modal-title" id="instructorModalTitle">➕ Add Instructor</div><input type="hidden" id="m_instructor_id"/>
-<div class="modal-form-grid"><div class="form-field full"><label>Full Name *</label><input type="text" id="m_full_name" placeholder="Juan Dela Cruz"/></div>
-<div class="form-field"><label>Department *</label><input type="text" id="m_department" value="College of Teacher Education"/></div>
-<div class="form-field"><label>Specialization</label><input type="text" id="m_specialization"/></div>
-<div class="form-field"><label>Email</label><input type="email" id="m_email"/></div>
-<div class="form-field"><label>Contact No.</label><input type="text" id="m_contact_no"/></div>
-<div class="form-field"><label>Link Faculty Account</label><select id="m_user_id"><option value="">— None —</option></select></div>
-<div class="form-field full"><label>RFID UID</label><input type="text" id="m_rfid_uid" placeholder="Scan or type…" autocomplete="off"/></div></div>
-<div id="instructorModalMsg" style="font-size:12px;margin-bottom:12px;display:none"></div>
-<div class="form-actions"><button class="btn-sm primary" onclick="saveInstructor()">💾 Save</button><button class="btn-sm ghost" onclick="closeInstructorModal()">Cancel</button></div></div></div>
-<script src="admin.js"></script>
+  <!-- Instructor Modal -->
+  <div class="modal-overlay" id="instructorModal">
+    <div class="modal-box"><button class="modal-close" onclick="closeInstructorModal()">✕</button>
+      <div class="modal-title" id="instructorModalTitle">➕ Add Instructor</div><input type="hidden"
+        id="m_instructor_id" />
+      <div class="modal-form-grid">
+        <div class="form-field full"><label>Full Name *</label><input type="text" id="m_full_name"
+            placeholder="Juan Dela Cruz" /></div>
+        <div class="form-field"><label>Department *</label><input type="text" id="m_department"
+            value="College of Teacher Education" /></div>
+        <div class="form-field"><label>Specialization</label><input type="text" id="m_specialization" /></div>
+        <div class="form-field"><label>Email</label><input type="email" id="m_email" /></div>
+        <div class="form-field"><label>Contact No.</label><input type="text" id="m_contact_no" /></div>
+        <div class="form-field"><label>Link Faculty Account</label><select id="m_user_id">
+            <option value="">— None —</option>
+          </select></div>
+        <div class="form-field full"><label>RFID UID</label><input type="text" id="m_rfid_uid"
+            placeholder="Scan or type…" autocomplete="off" /></div>
+      </div>
+      <div id="instructorModalMsg" style="font-size:12px;margin-bottom:12px;display:none"></div>
+      <div class="form-actions"><button class="btn-sm primary" onclick="saveInstructor()">💾 Save</button><button
+          class="btn-sm ghost" onclick="closeInstructorModal()">Cancel</button></div>
+    </div>
+  </div>
+  <script src="admin.js"></script>
 </body>
+
 </html>

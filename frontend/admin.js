@@ -58,7 +58,7 @@ function showPanel(name) {
   if (name === 'students') { if (currentStudentTab === 'active') loadStudents(); else loadPendingStudents(); }
   if (name === 'simulator') loadReaders();
   if (name === 'schedules') { loadScheduleDropdowns(); loadScheduleList(); }
-  if (name === 'instructors') loadInstructors();
+  if (name === 'instructors') { if (currentInstTab === 'active') loadInstructors(); else loadPendingInstructors(); }
   if (name === 'live') { loadLiveSessions(); startLivePolling(); }
   if (name === 'audit') loadAudit();
 
@@ -494,12 +494,100 @@ async function deactivateSchedule(schedId, code) {
 }
 
 // INSTRUCTORS
+let currentInstTab = 'active';
+function switchInstTab(tab) {
+  currentInstTab = tab;
+  document.getElementById('inst-view-active').style.display = tab === 'active' ? 'block' : 'none';
+  document.getElementById('inst-view-pending').style.display = tab === 'pending' ? 'block' : 'none';
+  document.getElementById('inst-tab-active-btn').classList.toggle('active', tab === 'active');
+  document.getElementById('inst-tab-pending-btn').classList.toggle('active', tab === 'pending');
+  if (tab === 'active') loadInstructors();
+  if (tab === 'pending') loadPendingInstructors();
+}
+
+let allPendingInstructors = [];
+async function loadPendingInstructors() {
+  const d = await apiFetch(`${API}/schedule/pending_instructors`);
+  allPendingInstructors = d.instructors || [];
+  const ct = d.pending_count ?? allPendingInstructors.length;
+  updateInstPendingUI(ct);
+  renderInstPending(allPendingInstructors);
+}
+
+function searchInstPending() {
+  const q = document.getElementById('instPendingSearch').value.toLowerCase();
+  renderInstPending(allPendingInstructors.filter(s => `${s.first_name} ${s.last_name} ${s.student_id}`.toLowerCase().includes(q)));
+}
+
+function renderInstPending(list) {
+  const tbody = document.getElementById('instPendingBody');
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--dim);padding:20px">🎉 No pending instructors.</td></tr>'; return; }
+  tbody.innerHTML = list.map(s => `
+    <tr id="inst-prow-${s.user_id}">
+      <td style="font-size:12px;color:var(--muted)">${s.student_id}</td>
+      <td><span class="pending-dot"></span>${s.first_name} ${s.last_name}</td>
+      <td style="font-size:12px;color:var(--muted)">${s.email || '—'}</td>
+      <td style="font-size:12px;color:var(--muted)">${s.contact_no || '—'}</td>
+      <td style="font-size:12px;color:var(--muted)">${fmtTime(s.created_at)}</td>
+      <td>
+        <div class="uid-assign-form">
+          <input class="uid-input" id="inst-uid-${s.user_id}" placeholder="Scan UID (optional)…" autocomplete="off" onkeydown="if(event.key==='Enter') approveInstructor(${s.user_id})"/>
+          <button class="btn-assign" id="inst-btn-${s.user_id}" onclick="approveInstructor(${s.user_id})">⚡ Approve</button>
+        </div>
+        <div id="inst-uid-msg-${s.user_id}" style="font-size:11px;margin-top:5px;display:none"></div>
+      </td>
+    </tr>`).join('');
+}
+
+async function approveInstructor(userId) {
+  const inp = document.getElementById(`inst-uid-${userId}`);
+  const btn = document.getElementById(`inst-btn-${userId}`);
+  const msg = document.getElementById(`inst-uid-msg-${userId}`);
+  const uid = inp ? inp.value.trim() : '';
+  btn.disabled = true; btn.textContent = '⏳ Saving…';
+
+  const res = await apiFetch(`${API}/schedule/approve_instructor`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: userId, card_uid: uid })
+  });
+
+  if (res.success) {
+    showUIDMsg(msg, `✅ Approved!`, 'success');
+    setTimeout(() => {
+      const row = document.getElementById(`inst-prow-${userId}`);
+      if (row) { row.style.opacity = '0'; row.style.transition = 'opacity .4s'; setTimeout(() => row.remove(), 400); }
+      allPendingInstructors = allPendingInstructors.filter(s => s.user_id !== userId);
+      updateInstPendingUI(allPendingInstructors.length);
+    }, 900);
+  } else {
+    showUIDMsg(msg, `❌ ${res.message}`, 'error');
+    btn.disabled = false; btn.textContent = '⚡ Approve';
+  }
+}
+
+async function refreshInstPendingBadge() {
+  const d = await apiFetch(`${API}/schedule/pending_instructors`);
+  updateInstPendingUI(d.pending_count ?? (d.instructors || []).length);
+}
+
+function updateInstPendingUI(ct) {
+  const badge = document.getElementById('instPendingTabBadge');
+  const notice = document.getElementById('instPendingNotice');
+  const noticeCt = document.getElementById('instPendingNoticeCt');
+  const tblBadge = document.getElementById('instPendingBadge');
+  if (badge) { badge.textContent = ct; badge.style.display = ct > 0 ? 'inline-flex' : 'none'; }
+  if (notice) { notice.style.display = ct > 0 ? 'flex' : 'none'; }
+  if (noticeCt) { noticeCt.textContent = ct; }
+  if (tblBadge) { tblBadge.textContent = `${ct} pending`; }
+}
+
 let allInstructors = [];
 async function loadInstructors() {
   const q = document.getElementById('instructorSearch').value || '';
   const d = await apiFetch(`${API}/schedule/list_instructors?search=${encodeURIComponent(q)}`);
   allInstructors = d.instructors || [];
   renderInstructors(allInstructors);
+  refreshInstPendingBadge();
 
   const facD = await apiFetch(`${API}/schedule/all_instructors`);
   const sel = document.getElementById('m_user_id');
@@ -533,9 +621,18 @@ function renderInstructors(list) {
       <div style="margin-bottom:10px">${rfidHtml}</div>
       <div class="instructor-actions">
         <button class="btn-edit" onclick="openInstructorModal(${i.instructor_id})">✏️ Edit</button>
+        <button class="btn-deactivate" onclick="deactivateInstructor(${i.instructor_id}, '${i.full_name.replace(/'/g, "\\'")}')" style="margin-left: 8px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.2); color: #fca5a5; padding: 6px 12px; border-radius: 8px; font-size: 13px; cursor: pointer;">🗑 Delete</button>
       </div>
     </div>`;
   }).join('');
+}
+
+async function deactivateInstructor(instructorId, name) {
+  if (!confirm(`Are you sure you want to delete instructor "${name}"?`)) return;
+  const d = await apiFetch(`${API}/schedule/deactivate_instructor`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ instructor_id: instructorId })
+  });
+  if (d.success) await loadInstructors(); else alert(`Error: ${d.message}`);
 }
 
 function openInstructorModal(instructorId) {

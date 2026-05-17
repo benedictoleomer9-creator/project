@@ -1,12 +1,15 @@
 // config/db.js — PostgreSQL connection pool + helpers
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const { Pool } = require('pg');
+
 
 const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '5432'),
   database: process.env.DB_NAME || 'cted_attendance_db',
   user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASS || '',
+  password: String(process.env.DB_PASS || ''),
 });
 
 // Set search_path on every new client
