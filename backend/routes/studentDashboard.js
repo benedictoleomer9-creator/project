@@ -2,9 +2,54 @@
 const express = require('express');
 const { pool } = require('../config/db');
 const { requireStudent } = require('../middleware/auth');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const dir = path.join(__dirname, '../uploads/profiles');
+    if (!fs.existsSync(dir)){
+        fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'profile-' + req.session.userId + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === "image/png" || file.mimetype === "image/jpeg" || file.mimetype === "image/jpg") {
+      cb(null, true);
+    } else {
+      cb(new Error('Only .png, .jpg and .jpeg format allowed!'), false);
+    }
+  }
+});
 
 const router = express.Router();
 router.use(requireStudent);
+
+// POST /api/student/upload_profile_picture
+router.post('/upload_profile_picture', upload.single('profile_picture'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No file uploaded or invalid file format.' });
+    }
+    const userId = req.session.userId;
+    const filename = req.file.filename;
+
+    await pool.query('UPDATE users SET profile_picture = $1, updated_at = NOW() WHERE user_id = $2', [filename, userId]);
+    res.json({ success: true, message: 'Profile picture updated successfully', profile_picture: filename });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 
 // GET /api/student/profile
 router.get('/profile', async (req, res) => {

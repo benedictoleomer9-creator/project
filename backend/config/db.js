@@ -23,9 +23,9 @@ pool.on('connect', (client) => {
 async function auditLog(userId, action, tableName = '', recordId = 0, details = {}, ip = null) {
   try {
     // Construct a meta JSONB object to demonstrate the use of JSONB
-    const meta = { 
-      logged_at: new Date().toISOString(), 
-      ip_address: ip 
+    const meta = {
+      logged_at: new Date().toISOString(),
+      ip_address: ip
     };
 
     await pool.query(
